@@ -1,0 +1,3 @@
+trained_knn_model.clf
+models/
+.env

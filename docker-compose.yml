@@ -1,0 +1,24 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo:4.4.6
+    container_name: mongodb-garderobe
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: garderobe
+    volumes:
+      - mongodb-garderobe-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - garderobe_network
+    ports:
+      - 27018:27017
+
+volumes:
+  mongodb-garderobe-data:
+    driver: local
+
+networks:
+  garderobe_network:
+    driver: bridge
