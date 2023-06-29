@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+pymongo
+python-dateutil
+pydantic
+passlib[bcrypt]
+python-multipart
+PyJWT

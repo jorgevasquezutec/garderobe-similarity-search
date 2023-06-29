@@ -3,8 +3,14 @@ conda-update:
 
 pip-tools:
 	python -m pip install pip-tools
-	pip-compile requirements/requirements.in
+	pip-compile requirements/base.in
 
 # execute after pull this repo
-	pip-sync requirements/requirements.txt
+	pip-sync requirements/base.txt
 
+run:
+	python .
+
+watch:
+	uvicorn app.app:app --reload
+	
