@@ -47,6 +47,18 @@ class QueryProduct(BaseModel):
     closet_id: int = None
 
 
+
+class InsertNearestNeighbors(BaseModel):
+    user_id: int
+    image_vector: List[float]
+    closet_id: int = None
+
+class QueryNearestNeighbors(BaseModel):
+    user_id: int
+    image_vector: List[float]
+    neighbors: int = 5
+    closet_id: int = None
+
 class InsertProduct(BaseModel):
     user_id: int
     product_id: int

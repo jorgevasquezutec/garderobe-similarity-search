@@ -2,11 +2,24 @@
 
 
 
+## Levantar Mongo
+
 ```
-make run 
+docker-compose up -d 
 ```
 
+## On local
+
+```
+make conda-update 
+```
+
+```
+make pip-tools
+```
 
 ```
 make watch 
 ```
+
+

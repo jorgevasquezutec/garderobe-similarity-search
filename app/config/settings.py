@@ -2,8 +2,11 @@
 Settings loaders using Pydantic BaseSettings classes (load from environment variables / dotenv file)
 """
 
+from dotenv import load_dotenv
 import pydantic
 import os
+
+load_dotenv()
 
 
 __all__ = ("api_settings", "mongo_settings", "aws_settings","model_settings")
