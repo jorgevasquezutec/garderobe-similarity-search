@@ -6,7 +6,7 @@ import pydantic
 import os
 
 
-__all__ = ("api_settings", "mongo_settings", "aws_settings")
+__all__ = ("api_settings", "mongo_settings", "aws_settings","model_settings")
 
 
 class BaseSettings(pydantic.BaseSettings):
@@ -44,6 +44,16 @@ class AwsSettings(BaseSettings):
         env_prefix = "AWS_"
 
 
+class ModelSettings(BaseSettings):
+    MODEL_URL = os.getenv("MODEL_URL", "")
+    IMAGE_WIDTH = os.getenv("IMAGE_WIDTH", 224)
+    IMAGE_HEIGHT = os.getenv("IMAGE_HEIGHT", 224)
+
+    class Config(BaseSettings.Config):
+        env_prefix = "MODEL_"
+
+
 api_settings = APISettings()
 mongo_settings = MongoSettings()
 aws_settings = AwsSettings()
+model_settings = ModelSettings()

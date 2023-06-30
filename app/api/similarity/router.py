@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from app.utils.security import get_current_active_user
 from app.api.similarity.schemas import ReponseQuery,QueryProduct,InsertProduct,ReponseInsert,ReponseDelete,DeleteProduct

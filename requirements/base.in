@@ -6,3 +6,13 @@ pydantic
 passlib[bcrypt]
 python-multipart
 PyJWT
+tensorflow
+numpy
+Pillow
+tensorflow_hub
+scipy
+scikit-learn
+opencv-python
+boto3
+ipykernel
+annoy
