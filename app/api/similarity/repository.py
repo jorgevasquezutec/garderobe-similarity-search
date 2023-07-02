@@ -1,56 +1,62 @@
-from app.config.datatabase import collection
-from app.api.similarity.schemas import InsertProduct
-from app.utils.aws import s3_client
-from app.api.similarity.services.index_vector import IndexVector
-from app.api.similarity.services.feature_extractor import feature_extractor
-from pymongo.client_session import ClientSession
+from app.config.database import collection
 
 
+def get_user_items_count(user_id: int)-> int:
+    count_pipeline = [
+        {"$match": {"owner_id": user_id}},
+        {"$project": {"items_count": {"$size": "$items"}}},
+        {"$group": {"_id": None, "total_count": {"$sum": "$items_count"}}}
+    ]
+    result = collection.aggregate(count_pipeline)
+    count = next(result, {"total_count": 0})["total_count"]
+    return count
 
 
-def insert_product(product:InsertProduct):
-    user_id = product.user_id
-    closet_id = product.closet_id
-    image_path = product.image_path
-    product_id = product.product_id
-    #obtener imagen 
-    image = s3_client.load_image(image_path)
-    if image is None:
-        raise Exception(f'Image {image_path} does not exist')
-    
-    #obtener vector
-    image_vector = feature_extractor.get_vector(image)
+def get_closet_items_count(user_id: int, closet_id: int)-> int:
+    count_pipeline = [
+        {"$match": {"owner_id": user_id}},
+        {"$project": {"total_count": {"$size": {"$filter": {"input": "$items", "as": "item", "cond": {"$eq": ["$$item.closet_id", closet_id]}}}}}}
+    ]
+    result = collection.aggregate(count_pipeline)
+    count = next(result, {"total_count": 0})["total_count"]
+    return count
 
-    #existe documento con user_id en collection
+def get_document_by_id(user_id: int)-> dict:
+    document = collection.find_one({"owner_id":user_id},{"items":0})
+    return document
 
-    document = collection.find_one({"user_id":user_id})
-    product = {
-        "product_id": product_id,
-        "image_vector": image_vector,
-        "image_path": image_path,
-        "closet_id": closet_id,
-        "index": 0
-    }
+def insert_document(document: dict)-> None:
+    collection.insert_one(document)
 
 
-    if document is None:
-        #crear documento
-        document = {
-            "user_id": user_id,
-            "products": [product],
-            "closet_index": [
-                {
-                    "closet_id": closet_id,
-                    "products": [product]
-                }
-            ]
+def update_document(document: dict,onwer_id: int)-> None:
+    collection.update_one(
+        {"owner_id": onwer_id},
+        {
+            "$push": {
+                "items": document
+            }
         }
-        collection.insert_one(document)
-    else:
-        pass
+    )
 
 
+def get_chunk_items_by_owner_id(owner_id: int, chunk_size: int, index_user: int)-> list:
+    pipeline = [
+        {"$match": {"owner_id": owner_id}},
+        {"$project": {"items": {"$slice": ["$items", index_user, chunk_size]}}},
+        {"$unwind": "$items"},
+    ]
+    result = collection.aggregate(pipeline)
+    items = [item for item in result]
+    return items
 
-    
-    
-
+def get_chunk_items_by_onwer_id_and_closet_id(owner_id: int, closet_id: int, chunk_size: int, index_closet: int)-> list:
+    pipeline = [
+        {"$match": {"owner_id": owner_id}},
+        {"$project": {"items": {"$slice": ["$items", index_closet, chunk_size]}}},
+        {"$unwind": "$items"},
+        {"$match": {"items.closet_id": closet_id}},
+    ]
+    result = collection.aggregate(pipeline)
+    items = [item for item in result]
+    return items

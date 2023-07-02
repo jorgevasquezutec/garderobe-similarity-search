@@ -9,9 +9,9 @@ __all__ = ("s3_client")
 
 class s3Client:
     def __init__(self):
-        self.access_key = aws_settings.ACCESS_KEY
-        self.secret_key = aws_settings.SECRET_ACCESS_KEY
-        self.bucket_name = aws_settings.BUCKET_NAME
+        self.access_key = aws_settings.AWS_S3_ACCESS_KEY_ID
+        self.secret_key = aws_settings.AWS_S3_SECRET_ACCESS_KEY
+        self.bucket_name = aws_settings.AWS_S3_BUCKET_NAME
 
     def load_image(self, image_key):
         s3 = boto3.client('s3', aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_key)

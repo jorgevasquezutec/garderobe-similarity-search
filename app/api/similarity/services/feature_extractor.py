@@ -12,7 +12,7 @@ class FeatureExtractor:
     def __init__(self , model_url, width, height):
         self.layer = hub.KerasLayer(model_url)
         self.model = tf.keras.Sequential([self.layer])
-        self.IMAGE_SHAPE=(width, height)
+        self.IMAGE_SHAPE=(int(width), int(height))
     
 
     def extract(self, image: Image.Image) -> np.ndarray:

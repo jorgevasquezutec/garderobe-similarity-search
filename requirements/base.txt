@@ -125,6 +125,7 @@ numpy==1.23.5
     #   ml-dtypes
     #   opencv-python
     #   opt-einsum
+    #   pandas
     #   scikit-learn
     #   scipy
     #   tensorboard
@@ -142,6 +143,8 @@ packaging==23.1
     # via
     #   ipykernel
     #   tensorflow
+pandas==2.0.3
+    # via -r requirements/base.in
 parso==0.8.3
     # via jedi
 passlib[bcrypt]==1.7.4
@@ -188,10 +191,13 @@ python-dateutil==2.8.2
     #   -r requirements/base.in
     #   botocore
     #   jupyter-client
+    #   pandas
 python-dotenv==1.0.0
     # via uvicorn
 python-multipart==0.0.6
     # via -r requirements/base.in
+pytz==2023.3
+    # via pandas
 pyyaml==6.0
     # via uvicorn
 pyzmq==25.1.0
@@ -263,6 +269,8 @@ typing-extensions==4.7.0
     #   pydantic
     #   starlette
     #   tensorflow
+tzdata==2023.3
+    # via pandas
 urllib3==1.26.16
     # via
     #   botocore
