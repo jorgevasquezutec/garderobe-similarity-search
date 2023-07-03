@@ -43,7 +43,7 @@ def insert(
      insert_item: InsertItem,
      current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    item = insert_item_repo(insert_item)
+    item = similarity_service.insert_item_with_s3_image(insert_item)
     return {"message": "Item Insertado"}
     
 
@@ -53,6 +53,12 @@ def delete(
     delete_item: DeleteItem,
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
+    
+    similarity_service.delete_item(
+        delete_item.owner_id,
+        delete_item.closet_id,
+        delete_item.item_id)
+
     return {"message": "Itemo Eliminado"}
 
 

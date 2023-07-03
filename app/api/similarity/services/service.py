@@ -50,14 +50,14 @@ def insert_item_with_s3_image(item:InsertItem):
         repository.update_document(item,owner_id)
 
 
-    #create index_vector
-    user_index_vector = IndexVector(model_settings.VECTOR_SIZE)
-    user_index_vector.buildByChunks(1000,owner_id,closet_id)
+    # #create index_vector
+    # user_index_vector = IndexVector(model_settings.VECTOR_SIZE)
+    # user_index_vector.buildByChunks(1000,owner_id,closet_id)
 
-    #craete index_vector closet
+    # #craete index_vector closet
 
-    closet_index_vector = IndexVector(model_settings.VECTOR_SIZE,type='closet')
-    closet_index_vector.buildByChunks(1000,owner_id,closet_id)
+    # closet_index_vector = IndexVector(model_settings.VECTOR_SIZE,type='closet')
+    # closet_index_vector.buildByChunks(1000,owner_id,closet_id)
 
     return item
 
@@ -73,7 +73,18 @@ def search_item(file, owner_id, closet_id=None):
     print(vector)
 
 
-def delete_item():
-    pass
+def delete_item(owner_id,closet_id,item_id):
+    repository.delete_item_by_onwner_id_closet_id_item_id(owner_id,closet_id,item_id)
+    #reindex
+
+    
+    #delete index_vector
+    # user_index_vector = IndexVector(model_settings.VECTOR_SIZE)
+    # user_index_vector.buildByChunks(1000,owner_id,closet_id)
+
+    #craete index_vector closet
+
+    # closet_index_vector = IndexVector(model_settings.VECTOR_SIZE,type='closet')
+    # closet_index_vector.buildByChunks(1000,owner_id,closet_id) 
     
 
