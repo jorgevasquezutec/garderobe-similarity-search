@@ -49,9 +49,9 @@ class AwsSettings(BaseSettings):
 
 class ModelSettings(BaseSettings):
     MODEL_URL = os.getenv("MODEL_URL", "")
-    IMAGE_WIDTH = int(os.getenv("IMAGE_WIDTH", 224))
-    IMAGE_HEIGHT = int(os.getenv("IMAGE_HEIGHT", 224))
-    FEAUTRE_LENGTH = int(os.getenv("FEAUTRE_LENGTH", 1280))
+    IMAGE_WIDTH: int = int(os.getenv("IMAGE_WIDTH", 224))
+    IMAGE_HEIGHT: int = int(os.getenv("IMAGE_HEIGHT", 224))
+    FEAUTRE_LENGTH : int = int(os.getenv("FEAUTRE_LENGTH", 1280))
 
     class Config(BaseSettings.Config):
         env_prefix = "MODEL_"
