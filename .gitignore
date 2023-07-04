@@ -6,3 +6,5 @@ data/
 app.ipynb
 feature_extractor/
 util/
+index/**/*.ann
+index/*
