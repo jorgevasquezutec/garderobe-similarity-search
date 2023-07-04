@@ -35,6 +35,10 @@ class IndexVector:
              #count_items
             total_items = repository.get_user_items_count(owner_id)
             total_chunks = total_items // chunkSize
+            if total_chunks == 0:
+                chunkSize = total_items
+                total_chunks = 1
+
             #ReadByChunks and insert in index
             for i in range(total_chunks):
                 chunk_items = repository.get_chunk_items_by_owner_id(owner_id,i,i*chunkSize)
@@ -45,6 +49,9 @@ class IndexVector:
         else:
             total_items_closet = repository.get_closet_items_count(owner_id,closet_id)
             total_chunks_closet = total_items_closet // chunkSize
+            if total_chunks_closet == 0:
+                chunkSize = total_items_closet
+                total_chunks_closet = 1
             #ReadByChunks and insert in index
             for i in range(total_chunks_closet):
                 chunk_items = repository.get_chunk_items_by_onwer_id_and_closet_id(owner_id,closet_id,i,i*chunkSize)
