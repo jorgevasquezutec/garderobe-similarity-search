@@ -44,27 +44,28 @@ class CustomRoute(APIRoute):
 #optimistic locking
 @app.get("/")
 def root():
-    document = collection.find_one()
-    if document:
-    #get correlativo e updatear
-        value = document.get("value")
-        if value is None:
-            value = 0
-        value += 1
-        collection.update_one(
-            {"_id": document.get("_id")},
-            {"$set": {"value": value}}
-        )
-        document = collection.find_one()
-        json_doc = json_util.dumps(document)
-        return json_doc
-    else:
-        #crear documento
-        document = {
-            "value": 0
-        }
-        collection.insert_one(document)
-        json_doc = json_util.dumps(document)
+    return {"message": "Bienvenido a la API de recomendaciones de ropa"}
+    # document = collection.find_one()
+    # if document:
+    # #get correlativo e updatear
+    #     value = document.get("value")
+    #     if value is None:
+    #         value = 0
+    #     value += 1
+    #     collection.update_one(
+    #         {"_id": document.get("_id")},
+    #         {"$set": {"value": value}}
+    #     )
+    #     document = collection.find_one()
+    #     json_doc = json_util.dumps(document)
+    #     return json_doc
+    # else:
+    #     #crear documento
+    #     document = {
+    #         "value": 0
+    #     }
+    #     collection.insert_one(document)
+    #     json_doc = json_util.dumps(document)
 
 
         

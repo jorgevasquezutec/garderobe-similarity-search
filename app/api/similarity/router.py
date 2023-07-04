@@ -15,27 +15,16 @@ def query(
     file: Annotated[UploadFile, File()],
     owner_id: Annotated[int, Form(...)],
     closet_id: Annotated[int, Form(...)] = None,
+    nearest_neighbors: Annotated[int, Form(...)] = 5,
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    # print(file)
-    #query
-    data = similarity_service.search_item(file,owner_id,closet_id)
-
-    return {
-        "message": "Itemos Encontrados",
-        "data":[
-            {
-                "item_id": 1,
-                "owner_id": 1,
-                "closet_id": 1
-            },
-            {
-                "item_id": 2,
-                "owner_id": 1,
-                "closet_id": 1
-            }
-        ]
+    
+    data = similarity_service.search_item(file,owner_id,closet_id,nearest_neighbors)
+    res : ReponseQuery = {
+        "message": "Items Encontrados",
+        "data": data
     }
+    return res
 
 @router.post("/insert",response_model=ReponseInsert)
 def insert(

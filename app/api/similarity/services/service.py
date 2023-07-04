@@ -1,6 +1,6 @@
 import io
 import app.api.similarity.repository as repository
-from app.api.similarity.schemas import InsertItem,Item
+from app.api.similarity.schemas import InsertItem,Item, QueryNearestNeighbors
 from app.utils.aws import s3_client
 from app.api.similarity.services.index_vector import IndexVector
 from app.api.similarity.services.feature_extractor import feature_extractor
@@ -51,13 +51,13 @@ def insert_item_with_s3_image(item:InsertItem):
 
 
     # #create index_vector
-    # user_index_vector = IndexVector(model_settings.VECTOR_SIZE)
-    # user_index_vector.buildByChunks(1000,owner_id,closet_id)
+    user_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH)
+    user_index_vector.buildByChunks(1000,owner_id,closet_id)
 
     # #craete index_vector closet
 
-    # closet_index_vector = IndexVector(model_settings.VECTOR_SIZE,type='closet')
-    # closet_index_vector.buildByChunks(1000,owner_id,closet_id)
+    closet_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH,type='closet')
+    closet_index_vector.buildByChunks(1000,owner_id,closet_id)
 
     return item
 
@@ -67,24 +67,41 @@ def insert_item(item:InsertItem):
 
 
 
-def search_item(file, owner_id, closet_id=None):
+def search_item(file, owner_id, closet_id=None, nearest_neighbors=5):
     file_pillow = Image.open(io.BytesIO(file.file.read()))
     vector = feature_extractor.extract(file_pillow)
-    print(vector)
+    dict : QueryNearestNeighbors = {
+        "owner_id": owner_id,
+        "closet_id": closet_id,
+        "image_vector": vector.tolist(),
+        "neighbors": nearest_neighbors,
+    }
+    # print(dict)
+    type = 'closet' if closet_id else 'user'
+    index_vector = IndexVector(model_settings.FEAUTRE_LENGTH,type=type)
+    ids = index_vector.queryNearestNeighbors(dict)
+    # print(ids)
+
+    if ids:
+        items = repository.get_items_by_indexs(owner_id,closet_id,ids)
+        return items
+    
+    return []
+
 
 
 def delete_item(owner_id,closet_id,item_id):
     repository.delete_item_by_onwner_id_closet_id_item_id(owner_id,closet_id,item_id)
-    #reindex
+
 
     
     #delete index_vector
-    # user_index_vector = IndexVector(model_settings.VECTOR_SIZE)
-    # user_index_vector.buildByChunks(1000,owner_id,closet_id)
+    user_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH)
+    user_index_vector.buildByChunks(1000,owner_id,closet_id)
 
     #craete index_vector closet
 
-    # closet_index_vector = IndexVector(model_settings.VECTOR_SIZE,type='closet')
-    # closet_index_vector.buildByChunks(1000,owner_id,closet_id) 
+    closet_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH,type='closet')
+    closet_index_vector.buildByChunks(1000,owner_id,closet_id) 
     
 

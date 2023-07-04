@@ -18,6 +18,7 @@ class ItemReponse(BaseModel):
     item_id: int
     owner_id: int
     closet_id: int
+    image_path: str
 
 
 class ReponseQuery(BaseModel):

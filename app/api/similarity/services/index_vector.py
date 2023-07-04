@@ -41,9 +41,9 @@ class IndexVector:
 
             #ReadByChunks and insert in index
             for i in range(total_chunks):
-                chunk_items = repository.get_chunk_items_by_owner_id(owner_id,i,i*chunkSize)
+                chunk_items = repository.get_chunk_items_by_owner_id(owner_id,chunkSize,i*chunkSize)
                 for item in chunk_items:
-                    self.index.add_item(item['index_user'],item['image_vector'])
+                    self.index.add_item(item['items']['index_user'],item['items']['image_vector'])
             self.index.build(self.n_trees)
             self.index.save(os.path.join(index_path, f'{owner_id}.ann'))
         else:
@@ -54,9 +54,9 @@ class IndexVector:
                 total_chunks_closet = 1
             #ReadByChunks and insert in index
             for i in range(total_chunks_closet):
-                chunk_items = repository.get_chunk_items_by_onwer_id_and_closet_id(owner_id,closet_id,i,i*chunkSize)
+                chunk_items = repository.get_chunk_items_by_onwer_id_and_closet_id(owner_id,closet_id,chunkSize,i*chunkSize)
                 for item in chunk_items:
-                    self.index.add_item(item['index_closet'],item['image_vector'])
+                    self.index.add_item(item['items']['index_closet'],item['items']['image_vector'])
             self.index.build(self.n_trees)
             self.index.save(os.path.join(index_path, f'{owner_id}_{closet_id}.ann'))
 
@@ -66,10 +66,11 @@ class IndexVector:
             query: QueryNearestNeighbors
             ):
         
-        owner_id = query.owner_id
-        closet_id = query.closet_id
-        vector = query.image_vector
-        n_neighbors = query.neighbors
+        owner_id = query['owner_id']
+        closet_id = query['closet_id']
+        vector = query['image_vector']
+        n_neighbors = query['neighbors']
+
         #carpeta index en raiz
         index_path = self.__getUserIndexPath(owner_id)      
 

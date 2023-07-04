@@ -29,6 +29,44 @@ def insert_document(document: dict)-> None:
     collection.insert_one(document)
 
 
+ 
+def get_items_by_indexs(owner_id, closet_id, indexs:list)-> list:
+
+    cond = {"$and":[
+        { "$in": ["$$item.index_closet", indexs]},
+        {"$eq": ["$$item.closet_id", closet_id]}
+    ]} if closet_id else {"$in": ["$$item.index_user", indexs]}
+    index_key = "index_user" if closet_id is None else "index_closet"
+
+    pipeline =[
+    {"$match": {"owner_id": owner_id}},
+    {"$project": {
+        "items": { 
+            "$filter": { 
+                    "input": "$items",
+                    "as": "item", 
+                   "cond": cond
+                }}
+        
+    }},
+    {"$unwind": "$items"}
+]
+    result = collection.aggregate(pipeline)
+    #order by index_user same as indexs
+    items = [{
+        "item_id": item["items"]["item_id"],
+        "owner_id": owner_id,
+        "image_path": item["items"]["image_path"],
+        "closet_id": item["items"]["closet_id"],
+        "index_user": item["items"]["index_user"],
+        "index_closet": item["items"]["index_closet"],
+    } for item in result]
+    sorted_items = sorted(items, key=lambda x: indexs.index(x[index_key]))
+    # print(sorted_items)
+    return sorted_items
+
+
+
 def update_document(document: dict,onwer_id: int)-> None:
     collection.update_one(
         {"owner_id": onwer_id},
