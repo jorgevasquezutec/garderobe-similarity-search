@@ -80,7 +80,8 @@ class IndexVector:
             index_filename = os.path.join(index_path, f'{owner_id}.ann')
 
         if not os.path.exists(index_filename):
-            raise Exception(f'Index file {index_filename} does not exist')
+            raise Exception(f'Onwer_id {owner_id} does not exist')
+            # raise Exception(f'Index file {index_filename} does not exist')
 
         self.index.load(index_filename)
         nearest_neighbors = self.index.get_nns_by_vector(vector, n_neighbors)

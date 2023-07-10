@@ -100,6 +100,10 @@ def delete_item_by_onwner_id_closet_id_item_id(onwer_id: int,closet_id: int, ite
 
 
 def get_chunk_items_by_owner_id(owner_id: int, chunk_size: int, index_user: int)-> list:
+    # print(owner_id,chunk_size,index_user)
+    if(chunk_size == 0 and index_user == 0):
+        return []
+
     pipeline = [
         {"$match": {"owner_id": owner_id}},
         {"$project": {"items": {"$slice": ["$items", index_user, chunk_size]}}},
@@ -110,6 +114,9 @@ def get_chunk_items_by_owner_id(owner_id: int, chunk_size: int, index_user: int)
     return items
 
 def get_chunk_items_by_onwer_id_and_closet_id(owner_id: int, closet_id: int, chunk_size: int, index_closet: int)-> list:
+    if(chunk_size == 0 and index_closet == 0):
+        return []
+    
     pipeline = [
     {"$match": {"owner_id": owner_id}},
     {"$project": {

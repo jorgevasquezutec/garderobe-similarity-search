@@ -18,13 +18,16 @@ def query(
     nearest_neighbors: Annotated[int, Form(...)] = 5,
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    
-    data = similarity_service.search_item(file,owner_id,closet_id,nearest_neighbors)
-    res : ReponseQuery = {
-        "message": "Items Encontrados",
-        "data": data
-    }
-    return res
+    try:
+        
+        data = similarity_service.search_item(file,owner_id,closet_id,nearest_neighbors)
+        res : ReponseQuery = {
+            "message": "Items Encontrados",
+            "data": data
+        }
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/insert",response_model=ReponseInsert)
 def insert(
@@ -32,8 +35,11 @@ def insert(
      insert_item: InsertItem,
      current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    item = similarity_service.insert_item_with_s3_image(insert_item)
-    return {"message": "Item Insertado"}
+    try:
+        item = similarity_service.insert_item_with_s3_image(insert_item)
+        return {"message": "Item Insertado"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
 
 @router.post("/delete", response_model=ReponseDelete)
@@ -42,13 +48,15 @@ def delete(
     delete_item: DeleteItem,
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    
-    similarity_service.delete_item(
-        delete_item.owner_id,
-        delete_item.closet_id,
-        delete_item.item_id)
+    try:
+        similarity_service.delete_item(
+            delete_item.owner_id,
+            delete_item.closet_id,
+            delete_item.item_id)
+        return {"message": "Itemo Eliminado"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-    return {"message": "Itemo Eliminado"}
 
 
 

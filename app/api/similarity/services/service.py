@@ -96,12 +96,16 @@ def delete_item(owner_id,closet_id,item_id):
 
     
     #delete index_vector
-    user_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH)
-    user_index_vector.buildByChunks(1000,owner_id,closet_id)
+    countLeft = repository.get_user_items_count(owner_id)
+
+    if(countLeft > 0):
+        user_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH)
+        user_index_vector.buildByChunks(1000,owner_id,closet_id)
 
     #craete index_vector closet
-
-    closet_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH,type='closet')
-    closet_index_vector.buildByChunks(1000,owner_id,closet_id) 
+    countLeft = repository.get_closet_items_count(owner_id,closet_id)
+    if(countLeft > 0):
+        closet_index_vector = IndexVector(model_settings.FEAUTRE_LENGTH,type='closet')
+        closet_index_vector.buildByChunks(1000,owner_id,closet_id) 
     
 
