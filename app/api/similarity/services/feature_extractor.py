@@ -1,5 +1,5 @@
-import tensorflow as tf
-import tensorflow_hub as hub
+# import tensorflow as tf
+# import tensorflow_hub as hub
 from PIL import Image
 import numpy as np
 from app.config.settings import model_settings
@@ -10,8 +10,8 @@ __all__ = ("feature_extractor")
 
 class FeatureExtractor:
     def __init__(self , model_url, width, height):
-        self.layer = hub.KerasLayer(model_url)
-        self.model = tf.keras.Sequential([self.layer])
+        self.layer = None #hub.KerasLayer(model_url)
+        self.model = None#tf.keras.Sequential([self.layer])
         self.IMAGE_SHAPE=(width, height)
     
 
