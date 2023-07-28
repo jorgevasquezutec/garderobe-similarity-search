@@ -1,6 +1,7 @@
 from typing import Union
 from pydantic import BaseModel
-
+from app.config.settings import api_settings
+from app.config.security import get_password_hash
 
 
 fake_users_db = {
@@ -8,7 +9,7 @@ fake_users_db = {
         "username": "admin",
         "full_name": "admin",
         "email": "admin@email.com",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+        "hashed_password":get_password_hash(api_settings.PASSWORD_ADMIN),
         "disabled": False,
     }
 }

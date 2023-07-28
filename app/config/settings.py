@@ -24,7 +24,7 @@ class APISettings(BaseSettings):
     LOG_LEVEL: str = os.getenv("API_LOG_LEVEL", "info")
     SECRET_KEY: str = os.getenv("API_SECRET_KEY", "secret")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("API_ACCESS_TOKEN_EXPIRE_MINUTES", 30)
-
+    PASSWORD_ADMIN = os.getenv("API_PASSWORD_ADMIN", "secret")
     class Config(BaseSettings.Config):
         env_prefix = "API_"
 

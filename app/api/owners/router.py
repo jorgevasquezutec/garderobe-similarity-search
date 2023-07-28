@@ -12,9 +12,9 @@ router = APIRouter()
 
 @router.get('', response_model=PaginationOwners)
 def all(*,
-        page: int = Query(0, ge=0),
-        size: int = Query(10, ge=1),
-        owner_id: int = Query(None, ge=0),
+        page: int = Query(0, ge=0, description="Numero de página"),
+        size: int = Query(10, ge=1 , description="Tamaño de la página"),
+        owner_id: int = Query(None, ge=0, description="Id del dueño"),
         current_user: Annotated[User, Depends(get_current_active_user)]
         ):
     res = owners_service.getOnwers(page, size, owner_id)
@@ -24,10 +24,10 @@ def all(*,
 
 @router.get('/{owner_id}/items', response_model=PaginationOwnerItems)
 def items(*,
-          page: int = Query(0, ge=0),
-          size: int = Query(10, ge=1),
-          owner_id: int = Path(..., ge=0),
-          closet_id: int = Query(None, ge=0),
+          page: int = Query(0, ge=0, description="Numero de página"),
+          size: int = Query(10, ge=1, description="Tamaño de la página"),
+          owner_id: int = Path(..., ge=0, description="Id del dueño"),
+          closet_id: int = Query(None, ge=0, description="Id del closet"),
           current_user: Annotated[User, Depends(get_current_active_user)]
           ):
     res = owners_service.getOwnerItems(owner_id, page, size, closet_id)
