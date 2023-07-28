@@ -62,10 +62,6 @@ def insert_item_with_s3_image(item:InsertItem):
     return item
 
 
-def insert_item(item:InsertItem):
-    pass    
-
-
 
 def search_item(file, owner_id, closet_id=None, nearest_neighbors=5):
     file_pillow = Image.open(io.BytesIO(file.file.read()))
