@@ -1,6 +1,24 @@
 from app.config.database import collection
 
 
+
+def get_item(owner_id: int, closet_id: int, item_id: int) -> dict:
+
+    query={}
+
+    if(owner_id):
+        query["owner_id"] = owner_id
+    if(closet_id):
+        query["items.closet_id"] = closet_id
+    if(item_id):
+        query["items.item_id"] = item_id
+    
+    projection = {"items.$": 1}
+    document = collection.find_one(query, projection)
+    return document
+
+
+
 def get_items(page: int = 0, size: int = 10, onwer_id :int = None) -> list:
     query = {}
     if onwer_id:

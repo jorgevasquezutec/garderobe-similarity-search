@@ -55,6 +55,6 @@ def delete(
             delete_item.owner_id,
             delete_item.closet_id,
             delete_item.item_id)
-        return {"message": "Itemo Eliminado"}
+        return {"message": "Item Eliminado"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

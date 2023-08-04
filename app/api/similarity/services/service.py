@@ -14,6 +14,13 @@ def insert_item_with_s3_image(item:InsertItem):
     closet_id = item.closet_id
     image_path = item.image_path
     item_id = item.item_id
+
+    exist_item = repository.get_item(owner_id,closet_id,item_id)
+
+    if(exist_item is not None):
+        text= f'Item ya existe'
+        raise Exception(text)
+
     #obtener imagen 
     image = s3_client.load_image(image_path)
     if image is None:
@@ -87,10 +94,14 @@ def search_item(file, owner_id, closet_id=None, nearest_neighbors=5):
 
 
 def delete_item(owner_id,closet_id,item_id):
-    repository.delete_item_by_onwner_id_closet_id_item_id(owner_id,closet_id,item_id)
 
+    exist_item = repository.get_item(owner_id,closet_id,item_id)
 
-    
+    if(exist_item is None):
+        text= f'Item no existe'
+        raise Exception(text)
+
+    repository.delete_item_by_onwner_id_closet_id_item_id(owner_id,closet_id,item_id)    
     #delete index_vector
     countLeft = repository.get_user_items_count(owner_id)
 
