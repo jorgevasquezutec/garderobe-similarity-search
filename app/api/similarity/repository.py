@@ -1,243 +1,129 @@
-from app.config.database import collection
-
+from app.config.database import collection, database
 
 
 def get_item(owner_id: int, closet_id: int, item_id: int) -> dict:
 
     query={}
 
-    if(owner_id):
-        query["owner_id"] = owner_id
-    if(closet_id):
-        query["items.closet_id"] = closet_id
-    if(item_id):
-        query["items.item_id"] = item_id
+    if(closet_id is not None):
+        query["closet_id"] = closet_id
+    if(item_id is not None):
+        query["item_id"] = item_id
+
+    print(query)
     
-    projection = {"items.$": 1}
-    document = collection.find_one(query, projection)
+    document = database[f'items_{owner_id}'].find_one(query)
     return document
 
+def get_items(page: int =0 , size: int = 10 , owner_id: int = None) -> list:
+    collections = database.list_collection_names()
+    #get collection with prefix items_
+    items_collections = [collection for collection in collections if collection.startswith('items_')]
+
+    if owner_id:
+        items_collections = [collection for collection in items_collections if collection.split('_')[1] == owner_id]
 
 
-def get_items(page: int = 0, size: int = 10, onwer_id :int = None) -> list:
-    query = {}
-    if onwer_id:
-        query = {"owner_id": onwer_id}
-
-    pipeline = [
-        {"$match": query},
-        {"$group": {"_id": "$owner_id", "total_items": {"$sum": {"$size": "$items"}}}},
-        {"$project": {"owner_id": "$_id", "total_items": 1}},
-        #order by owner_id 
-        {"$sort": {"owner_id": 1}},
-        {"$skip": page*size},
-        {"$limit": size}
-    ]
-
-    result = collection.aggregate(pipeline)
-    items = [item for item in result]
-    total = collection.count_documents(query)
+    response = []
+    for collection in items_collections:
+        icollection = database[collection]
+        total = icollection.count_documents({})
+        response.append({
+            "owner_id": collection.split('_')[1],
+            "total_items": total
+        })
+    
+    filter = response[page*size:page*size+size]
+    #response page with size 
     return {
-        "items": items,
+        "items": filter,
         "total": total,
         "page": page,
         "pages":  (total + size - 1) // size,
         "size": size
     }
 
-
-def get_items_user_paginate(owner_id: int, page: int = 0, size: int = 10,
-                            closet_id: int = None) -> list:
-
-    if closet_id is None:
-        pipeline = [
-            {"$match": {"owner_id": owner_id}},
-            {"$project": {"items": {"$slice": ["$items", page*size, size]}}},
-            {"$unwind": "$items"},
-        ]
-        result = collection.aggregate(pipeline)
-        items = [{
-            "item_id": item["items"]["item_id"],
-            "owner_id": owner_id,
-            "image_path": item["items"]["image_path"],
-            "closet_id": item["items"]["closet_id"]
-        } for item in result]
-        total = get_user_items_count(owner_id)
-        pages =  (total + size - 1) // size
-    else:
-        pipeline = [
-            {"$match": {"owner_id": owner_id}},
-            {"$project": {
-                "items": {
-                    "$slice": [
-                        {"$filter": {
-                            "input": "$items",
-                            "as": "item",
-                            "cond": {"$eq": ["$$item.closet_id", closet_id]}
-                        }},
-                        page*size, size
-                    ]
-                }
-            }},
-            {"$unwind": "$items"}
-        ]
-        result = collection.aggregate(pipeline)
-        items = [{
-            "item_id": item["items"]["item_id"],
-            "owner_id": owner_id,
-            "image_path": item["items"]["image_path"],
-            "closet_id": item["items"]["closet_id"]
-        } for item in result]
-        total = get_closet_items_count(owner_id, closet_id)
-        pages =  (total + size - 1) // size
-
+def get_items_user_paginate(owner_id: int, page: int = 0, size: int = 10, closet_id: int = None) -> list:
+    collection = database[f'items_{owner_id}']
+    query = {}
+    if closet_id:
+        query["closet_id"] = closet_id
+    items = collection.find(query).skip(page*size).limit(size)
+    total = collection.count_documents(query)
     return {
-        "items": items,
+        "items": [{
+            "item_id": item["item_id"],
+            "owner_id": owner_id,
+            "image_path": item["image_path"],
+            "closet_id": item["closet_id"]
+        } for item in items],
         "total": total,
         "page": page,
-        "pages": pages,
+        "pages":  (total + size - 1) // size,
         "size": size
     }
 
-
-def get_user_items_count(user_id: int) -> int:
-    count_pipeline = [
-        {"$match": {"owner_id": user_id}},
-        {"$project": {"items_count": {"$size": "$items"}}},
-        {"$group": {"_id": None, "total_count": {"$sum": "$items_count"}}}
-    ]
-    result = collection.aggregate(count_pipeline)
-    count = next(result, {"total_count": 0})["total_count"]
-    return count
+def get_user_items_count(owner_id: int) -> int:
+    collection = database[f'items_{owner_id}']
+    total = collection.count_documents({})
+    return total
 
 
-def get_closet_items_count(user_id: int, closet_id: int) -> int:
-    count_pipeline = [
-        {"$match": {"owner_id": user_id}},
-        {"$project": {"total_count": {"$size": {"$filter": {"input": "$items",
-                                                            "as": "item", "cond": {"$eq": ["$$item.closet_id", closet_id]}}}}}}
-    ]
-    result = collection.aggregate(count_pipeline)
-    count = next(result, {"total_count": 0})["total_count"]
-    return count
-
-
-def get_document_by_id(user_id: int) -> dict:
-    document = collection.find_one({"owner_id": user_id}, {"items": 0})
-    return document
-
+def get_closet_items_count(owner_id: int, closet_id: int) -> int:
+    collection = database[f'items_{owner_id}']
+    total = collection.count_documents({"closet_id": closet_id})
+    return total
 
 def insert_document(document: dict) -> None:
-    collection.insert_one(document)
+    owner_id = document['owner_id']
+    items = document['items']
+    collection = database[f'items_{owner_id}']
+    collection.insert_many(items)
 
-
-def get_items_by_indexs(owner_id, closet_id, indexs: list) -> list:
-
-    cond = {"$and": [
-        {"$in": ["$$item.index_closet", indexs]},
-        {"$eq": ["$$item.closet_id", closet_id]}
-    ]} if closet_id else {"$in": ["$$item.index_user", indexs]}
-    index_key = "index_user" if closet_id is None else "index_closet"
-
-    pipeline = [
-        {"$match": {"owner_id": owner_id}},
-        {"$project": {
-            "items": {
-                "$filter": {
-                    "input": "$items",
-                    "as": "item",
-                    "cond": cond
-                }}
-
-        }},
-        {"$unwind": "$items"}
-    ]
-    result = collection.aggregate(pipeline)
-    # order by index_user same as indexs
-    items = [{
-        "item_id": item["items"]["item_id"],
+def get_items_by_indexs(owner_id: int, closet_id: int, indexs: list) -> dict:
+    collection = database[f'items_{owner_id}']
+    query = {}
+    if closet_id:
+        query["closet_id"] = closet_id
+        if indexs:
+            query["index_closet"] = {"$in": indexs}
+    else:
+        if indexs:
+            query["index_user"] = {"$in": indexs}
+    items = collection.find(query)
+    return [{
+        "item_id": item["item_id"],
         "owner_id": owner_id,
-        "image_path": item["items"]["image_path"],
-        "closet_id": item["items"]["closet_id"],
-        "index_user": item["items"]["index_user"],
-        "index_closet": item["items"]["index_closet"],
-    } for item in result]
-    sorted_items = sorted(items, key=lambda x: indexs.index(x[index_key]))
-    # print(sorted_items)
-    return sorted_items
-
-
-def update_document(document: dict, onwer_id: int) -> None:
-    collection.update_one(
-        {"owner_id": onwer_id},
-        {
-            "$push": {
-                "items": document
-            }
-        }
-    )
-
-
+        "image_path": item["image_path"],
+        "closet_id": item["closet_id"]
+    } for item in items]
+    
 def delete_item_by_onwner_id_closet_id_item_id(onwer_id: int, closet_id: int, item_id: int) -> None:
-    # document have items array , delete item in array where item_id = item_id , owner_id = owner_id and closet_id = closet_id
+    collection = database[f'items_{onwer_id}']
+    collection.delete_one({"item_id": item_id, "closet_id": closet_id})
 
-    collection.update_one(
-        {"owner_id": onwer_id, "items.item_id": item_id,
-            "items.closet_id":  closet_id
-         },
-        {
-            "$pull": {
-                "items": {
-                    "item_id": item_id,
-                    "closet_id": closet_id
-                }
-            }
-        }
-    )
+
     reindex_all_index_user_field_by_onwer_id(onwer_id, 1000)
     reindex_all_index_closet_field_by_onwer_id_and_closet_id(
         onwer_id, closet_id, 1000)
 
 
 def get_chunk_items_by_owner_id(owner_id: int, chunk_size: int, index_user: int) -> list:
-    # print(owner_id,chunk_size,index_user)
     if (chunk_size == 0 and index_user == 0):
         return []
+    collection = database[f'items_{owner_id}']
+    items = collection.find().skip(index_user).limit(chunk_size)
 
-    pipeline = [
-        {"$match": {"owner_id": owner_id}},
-        {"$project": {"items": {"$slice": [
-            "$items", index_user, chunk_size]}}},
-        {"$unwind": "$items"},
-    ]
-    result = collection.aggregate(pipeline)
-    items = [item for item in result]
-    return items
+    return list(items)
 
 
 def get_chunk_items_by_onwer_id_and_closet_id(owner_id: int, closet_id: int, chunk_size: int, index_closet: int) -> list:
     if (chunk_size == 0 and index_closet == 0):
         return []
-
-    pipeline = [
-        {"$match": {"owner_id": owner_id}},
-        {"$project": {
-            "items": {
-                "$slice": [
-                    {"$filter": {
-                        "input": "$items",
-                        "as": "item",
-                        "cond": {"$eq": ["$$item.closet_id", closet_id]}
-                    }},
-                    index_closet, chunk_size
-                ]
-            }
-        }},
-        {"$unwind": "$items"}
-    ]
-    result = collection.aggregate(pipeline)
-    items = [item for item in result]
-    return items
+    
+    collection = database[f'items_{owner_id}']
+    items = collection.find({"closet_id": closet_id}).skip(index_closet).limit(chunk_size)
+    return list(items)
 
 
 def reindex_all_index_user_field_by_onwer_id(
@@ -262,18 +148,14 @@ def reindex_all_index_user_field_by_onwer_id(
         chunk_items = get_chunk_items_by_owner_id(
             owner_id, chunk_size, i*chunk_size)
         for index, item in enumerate(chunk_items):
-            collection.update_one(
-                {
-                    "owner_id": owner_id, "items.item_id": item['items']['item_id'],
-                    "items.closet_id":  item['items']['closet_id']
-                },
-                {
-                    "$set": {
-                        "items.$.index_user": i*chunk_size + index
-                    }
+            database[f'items_{owner_id}'].update_one({
+                "item_id": item['item_id'],
+                "closet_id":  item['closet_id']
+            },{
+                "$set": {
+                    "index_user": i*chunk_size + index
                 }
-            )
-
+            })
 
 def reindex_all_index_closet_field_by_onwer_id_and_closet_id(
         owner_id: int,
@@ -291,14 +173,11 @@ def reindex_all_index_closet_field_by_onwer_id_and_closet_id(
         chunk_items = get_chunk_items_by_onwer_id_and_closet_id(
             owner_id, closet_id, chunk_size, i*chunk_size)
         for index, item in enumerate(chunk_items):
-            collection.update_one(
-                {
-                    "owner_id": owner_id, "items.item_id": item['items']['item_id'],
-                    "items.closet_id":  item['items']['closet_id']
-                },
-                {
-                    "$set": {
-                        "items.$.index_closet": i*chunk_size + index
-                    }
+            database[f'items_{owner_id}'].update_one({
+                "item_id": item['item_id'],
+                "closet_id":  item['closet_id']
+            },{
+                "$set": {
+                    "index_closet": i*chunk_size + index
                 }
-            )
+            })

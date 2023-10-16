@@ -12,14 +12,16 @@ class FeatureExtractor:
     
 
     def extract(self, image: Image.Image) -> np.ndarray:
-        file = image.convert('L').resize(self.IMAGE_SHAPE)
-        file = np.stack((file,)*3, axis=-1)
+        file = image.resize(self.IMAGE_SHAPE)
+        # file = np.stack((file,)*3, axis=-1)
         file = np.array(file)/255.0
         embedding = self.model.predict(file[np.newaxis, ...])
         vgg16_feature_np = np.array(embedding)
         flattended_feature = vgg16_feature_np.flatten()
 
         return flattended_feature
+    
+    
 
 
 feature_extractor = FeatureExtractor(

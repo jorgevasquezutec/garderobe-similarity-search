@@ -30,7 +30,7 @@ def insert_item_with_s3_image(item:InsertItem):
 
     #falta hacerlo mas optimo.
     # document = collection.find_one({"owner_id":owner_id},{"items":0})
-    document = repository.get_document_by_id(owner_id)
+    count = repository.get_user_items_count(owner_id)
     item : Item = {
         "item_id": item_id,
         "image_vector": image_vector.tolist(),
@@ -40,12 +40,13 @@ def insert_item_with_s3_image(item:InsertItem):
         "index_closet": 0,
     }
 
-    if document is None:
-        #crear documento
-        document = {
+    document = {
             "owner_id": owner_id,
             "items": [item],
-        }
+    }
+
+    if count == 0:
+        #crear documento
         repository.insert_document(document)
         # collection.insert_one(document)
     else:
@@ -54,7 +55,7 @@ def insert_item_with_s3_image(item:InsertItem):
         item['index_user'] = repository.get_user_items_count(owner_id)
         item['index_closet'] = repository.get_closet_items_count(owner_id,closet_id)
         #actualizar documento
-        repository.update_document(item,owner_id)
+        repository.insert_document(document)
 
 
     # #create index_vector

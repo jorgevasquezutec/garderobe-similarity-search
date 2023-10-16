@@ -1,5 +1,5 @@
 from typing import List
-from pydantic import BaseModel , Field
+from pydantic import BaseModel , Field ,validator
 import numpy as np
 from typing import Annotated,Union
 from fastapi import UploadFile, File, Form
@@ -62,4 +62,10 @@ class DeleteItem(BaseModel):
     owner_id: Annotated[int, Field(..., description="Id del dueño")]
     item_id: Annotated[int, Field(..., description="Id del item")]
     closet_id: Annotated[int, Field(..., description="Id del closet")] = None
+
+    @validator('owner_id', 'item_id', 'closet_id', pre=True, always=True)
+    def check_nonzero_values(cls, v, values):
+        if v is not None and v == 0:
+            raise ValueError("El valor no puede ser 0")
+        return v
 

@@ -14,3 +14,9 @@ run:
 watch:
 	uvicorn app.app:app --reload
 	
+restore:
+	docker cp ./backup.gz mongodb-garderobe:./backup.gz
+	docker exec -it mongodb-garderobe mongorestore --archive=./backup.gz -u root -p root
+
+seed:
+	python -m app.seeder.seeder
