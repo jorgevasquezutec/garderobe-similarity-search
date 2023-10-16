@@ -8,3 +8,5 @@ feature_extractor/
 util/
 index/**/*.ann
 index/*
+backup.gz
+test.ipynb
