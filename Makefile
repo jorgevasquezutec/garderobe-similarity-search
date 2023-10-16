@@ -19,4 +19,4 @@ restore:
 	docker exec -it mongodb-garderobe mongorestore --archive=./backup.gz -u root -p root
 
 seed:
-	python -m app.seeder.seeder
+	docker-copmpose exec app exec python -m app.seeder.seeder
